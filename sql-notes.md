@@ -1,4 +1,8 @@
 - [Introduction to Databases](#introduction-to-databases)
+  - [Relational Schemas](#relational-schemas)
+    - [Entity-Relationship Diagram](#entity-relationship-diagram)
+    - [Schema Diagram](#schema-diagram)
+    - [Keys](#keys)
 - [SQL Theory](#sql-theory)
   - [Data Definition Language (DDL)](#data-definition-language-ddl)
   - [Data Manipulation Language (DML)](#data-manipulation-language-dml)
@@ -12,6 +16,9 @@
 Structured Query Language (SQL) is a declarative programming language that allows you to create,manipulate, and share data specifically from Relational Database Systems (RDBMS).
 
 **Database:** Systematic collection of data.  Their main goal id to organize large amounts of data that can be quickly retrieved. They must **compact, well-strucutred, and efficient**.
+- The type of data contained in a field is pre-set in its creation
+- Data is stored in table records, not individual cells
+- All calculations and operations are done after data retrieval
 
 **Database Management System (DBMS):** A collection of programs that enables users to access a database, munipulate data, and helps in the representation of data.  It also helps control access to the database by various users.
 
@@ -19,11 +26,29 @@ Structured Query Language (SQL) is a declarative programming language that allow
 
 **Entity:** The smallest unit that can contain a meaningful set of data. E.g. a row (record) in a table represents its horizontal entity and a column (field) its vertical entity.
 
-| ID    | Name          | Balance |
-| ------|---------------| -------:|
-| 001   | John Doe      | $1600   |
-| 002   | Jane Doe      |   $12   |
-| 003   | Sally Smith   |    $1   |
+## Relational Schemas
+
+Database designers will plot the entire database system using two common methods.
+
+### Entity-Relationship Diagram
+![ER Diagram](images/er-diagram.png)
+
+### Schema Diagram
+![Relational Schema Diagram](images/relational-schema.png)
+
+### Keys
+
+**Primary Key:** A field (or set of fields) whose value exists and is unique for every record in a table.
+- The PK is the **unique identifier of a table** .  A table can have at most one PK
+- The PK field(s) cannot contain `null` values
+
+**Foreign Key:** A field (or set of fields) in one table, that refers to the primary key in another table.  The table with the FK is called the child table, and the table with the PK is called the parent table.
+- FK's identify relationships between tables
+- Preserve data integrity (cannot enter a value in the FK field that has not been declared in the parent table)
+
+**Unique Key:**  Unique keys ensure that all values in a fiels are different.  A PK automatically has a unique constraint on it.
+- May contain `null` values
+- A table may have multiple unique keys
 
 ---
 
