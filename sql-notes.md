@@ -1,4 +1,6 @@
 - [Introduction to Databases](#introduction-to-databases)
+  - [Tables](#tables)
+    - [Field Constraints](#field-constraints)
   - [Data Types](#data-types)
   - [Relational Schemas](#relational-schemas)
     - [Entity-Relationship Diagram](#entity-relationship-diagram)
@@ -9,6 +11,8 @@
   - [Data Manipulation Language (DML)](#data-manipulation-language-dml)
   - [Data Control Langauge (DCL)](#data-control-langauge-dcl)
   - [Transaction Control Language (TCL)](#transaction-control-language-tcl)
+- [Data Definition](#data-definition)
+  - [Creating Tables](#creating-tables)
 
 ---
 
@@ -26,10 +30,18 @@ Structured Query Language (SQL) is a declarative programming language that allow
 
 **Entity:** The smallest unit that can contain a meaningful set of data. E.g. a row (record) in a table represents its horizontal entity and a column (field) its vertical entity.
 
-**Tables:** Contain **fields** (columns) and **records** (rows) of data.
+## Tables
+
+Contain **fields** (columns) and **records** (rows) of data.
 - Each field has a defined data type.
 - Each field should contain only one value per record.
 - Each row of sata should be unique.
+
+### Field Constraints
+
+1. **Unique:** Ensures that a field can only contain unique values.  Throws an error if a field contains duplicate values.
+2. **Not Null:** Ensures that  a field cannot constain `NULL` values.
+3. **Check:**  Ensures that data in a field satiisfies a specific `BOOLEAN` expression.
 
 ## Data Types
 
@@ -61,7 +73,7 @@ Database designers will plot the entire database system using two common methods
 
 ### Keys
 
-**Primary Key:** A field (or set of fields) whose value exists and is unique for every record in a table.  It uniquely identifies each record in a table.
+**Primary Key:** A field (or set of fields) whose value exists and is unique for every record in a table.
 - The PK is the **unique identifier of a table** .  A table can have at most one PK
 - The PK field(s) cannot contain `null` values
 
@@ -155,4 +167,35 @@ commit;
 Comitted statements cannot be udone.  However, the `ROLLBACK` clause reverts all changes since the last commit or rollback.
 
 --- 
+
+# Data Definition
+
+To connect to your local database using from the command line, use the command `psql -U postgres -h localhost database_name`.  To connect to a specific database while already in psql, simply use the meta command `\c database_name`.
+
+To create a new database use the follwing command
+
+```sql
+create database database_name;
+```
+
+## Creating Tables
+
+```sql
+-- Parent table
+CREATE TABLE DIRECTORS( director_id serial PRIMARY KEY,
+                        first_name VARCHAR ( 30 ),
+                        last_name VARCHAR ( 30 ) NOT NULL,
+                        date_of_birth DATE,
+                        nationality VARCHAR ( 20 ) );
+
+-- Child table
+CREATE TABLE MOVIES( movie_id serial PRIMARY KEY,
+                     movie_name VARCHAR ( 50 ) NOT NULL,
+                     movie_length INT,
+                     release_date DATE,
+                     -- FOREIGN KEY field
+                     director_id INT REFERENCES DIRECTORS(director_id) );
+```                     
+              
+
 
