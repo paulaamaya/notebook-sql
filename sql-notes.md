@@ -1,4 +1,5 @@
 - [Introduction to Databases](#introduction-to-databases)
+  - [Data Types](#data-types)
   - [Relational Schemas](#relational-schemas)
     - [Entity-Relationship Diagram](#entity-relationship-diagram)
     - [Schema Diagram](#schema-diagram)
@@ -13,18 +14,40 @@
 
 # Introduction to Databases
 
-Structured Query Language (SQL) is a declarative programming language that allows you to create,manipulate, and share data specifically from Relational Database Systems (RDBMS).
+Structured Query Language (SQL) is a declarative programming language that allows you to create,manipulate, and share data specifically from Relational Database Management Systems (RDBMS).
 
-**Database:** Systematic collection of data.  Their main goal id to organize large amounts of data that can be quickly retrieved. They must **compact, well-strucutred, and efficient**.
-- The type of data contained in a field is pre-set in its creation
-- Data is stored in table records, not individual cells
-- All calculations and operations are done after data retrieval
+**Database:** Systematic collection of data.  Their main goal is to organize large amounts of data that can be quickly retrieved. They must **compact, well-structured, and efficient**.
+- Data is stored in table records, not individual cells.
+- All calculations and operations are done after data retrieval.
 
 **Database Management System (DBMS):** A collection of programs that enables users to access a database, munipulate data, and helps in the representation of data.  It also helps control access to the database by various users.
 
 **Query:** Piece of code inducing the computer to execute a certain operation that will deliver the desired output.
 
 **Entity:** The smallest unit that can contain a meaningful set of data. E.g. a row (record) in a table represents its horizontal entity and a column (field) its vertical entity.
+
+**Tables:** Contain **fields** (columns) and **records** (rows) of data.
+- Each field has a defined data type.
+- Each field should contain only one value per record.
+- Each row of sata should be unique.
+
+## Data Types
+
+See here for a full list of [PostgeSQL data types](https://www.postgresql.org/docs/13/datatype.html).  The most common ones can be found below.
+
+| Type | Description | Examples |
+|-|-|-|
+| `INT` | Whole number | Age, quantity |
+| `NUMERIC(P,S)` | Arbitrary-precision numbers with P significant digits and S decimal places. | Height, price |
+| `SERIAL` | Auto-incrementing integers | Not true types, merely notational convenience for creating unique id columns |
+| `CHAR(N)` | Fixed length string of length N | Gender, state |
+| `VARCHAR(N)` | Varying length string of max length N | Name, email |
+| `TEXT` | Varying length string with no max length | Comments, reviews |
+| `TIME` | HH:MM:SS | In military format |
+| `DATE` | YYYY-MM-DD |  |
+| `TIMESTAMP` | YYYY-MM-DD HH:MM:SS | Order time |
+| `BOOLEAN` | True or false | In stock |
+| `ENUM` | Values belonging to a user-defined list | Day of the week |
 
 ## Relational Schemas
 
@@ -38,7 +61,7 @@ Database designers will plot the entire database system using two common methods
 
 ### Keys
 
-**Primary Key:** A field (or set of fields) whose value exists and is unique for every record in a table.
+**Primary Key:** A field (or set of fields) whose value exists and is unique for every record in a table.  It uniquely identifies each record in a table.
 - The PK is the **unique identifier of a table** .  A table can have at most one PK
 - The PK field(s) cannot contain `null` values
 
@@ -62,20 +85,20 @@ Statements that allow us to define or modify data structures and objects (e.g. t
 
 ```sql
 -- create a table with a single column
-CREATE TABLE sales_data (purchase_number INT);
+create table sales_data (purchase_number int);
 
 -- add another column to it
-ALTER TABLE sales_data
-ADD COLUMN date_of_purchase DATE;
+alter table sales_data
+add column date_of_purchase date;
 
 -- rename the table
-RENAME TABLE sales_data TO sales;
+rename table sales_data to sales;
 
 -- delete the table
-DROP TABLE sales;
+drop table sales;
 
 -- alternatively, just empty the table
-TRUNCATE TABLE sales;
+truncate table sales;
 ```
 
 ## Data Manipulation Language (DML)
@@ -84,22 +107,22 @@ Statements that allow us to manipulate the data in a database (e.g. the `SELECT`
 
 ```sql
 -- retrieve entire table
-SELECT * FROM sales;
+select * from sales;
 
 -- insert data into table
 -- equivalent to INSERT INTO sales (purchase_number, date_of_purchase) VALUES (001, '2021-10-11');
-INSERT INTO sales VALUES (001, "2021-10-11");
+insert into sales values (001, "2021-10-11");
 
-UPDATE sales
-SET date_of_purchase_ = "2020-12-12"
-WHERE purchase = 1;
+update sales
+set date_of_purchase_ = "2020-12-12"
+where purchase = 1;
 ```
 
 While the `TRUNCATE` statement removes all the records contained in the table, `DELETE` allows us to specify precisely what you would like removed.
 
 ```sql
-DELETE FROM sales
-WHERE purchase_number = 1;
+delete from sales
+where purchase_number = 1;
 ```
 
 ## Data Control Langauge (DCL)
@@ -108,27 +131,28 @@ Statements that allow us to manage the rights users have in a database.  You can
 
 ```sql
 -- GRANT syntax
-GRANT permission_type
-ON database_name.table_name 
-TO "username"@"localhost"
+grant permission_type
+on database_name.table_name 
+to "username"@"localhost"
 
 -- the user Frank can only SELECT 
 -- and only from the customers table in the database
-CREATE USER "frank"@"localhost" IDENTIFIED BY "password";
-GRANT SELECT ON sales.customers TO "frank"@"localhost";
+create user "frank"@"localhost" identified by "password";
+grant select on sales.customers to "frank"@"localhost";
 ```
 
-## Transaction Control Language (TCL)
-
-Not every change you make to a database is saved automatically. 
+## Transaction Control Language (TCL) 
 
 The `COMMIT` statement will save the changes you've made, allowing other users to access the modified version.  It only works with changes related to the DML keywords `INSERT`, `DELETE`, and `UPDATE`.
 
 ```sql
-UPDATE customers
-SET last_name = "Johnson"
-WHERE custumer_id = 4
-COMMIT;
+update customers
+set last_name = "Johnson"
+where custumer_id = 4
+commit;
 ```
 
 Comitted statements cannot be udone.  However, the `ROLLBACK` clause reverts all changes since the last commit or rollback.
+
+--- 
+
