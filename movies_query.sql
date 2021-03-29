@@ -26,3 +26,4 @@
 -- CREATE TABLE MOVIES_ACTORS( movie_id INT REFERENCES MOVIES(movie_id),
 --                             actor_id INT REFERENCES ACTORS(actor_id),
 --                             PRIMARY KEY ( movie_id, actor_id ) );
+

@@ -13,7 +13,11 @@
   - [Transaction Control Language (TCL)](#transaction-control-language-tcl)
 - [Data Definition](#data-definition)
   - [Creating Tables](#creating-tables)
-  - [Modifying Fields](#modifying-fields)
+  - [Modifying Columns](#modifying-columns)
+- [Data Manipulation](#data-manipulation)
+  - [Inserting Data](#inserting-data)
+  - [Updating Data](#updating-data)
+  - [Deleting Data](#deleting-data)
 
 ---
 
@@ -206,7 +210,7 @@ CREATE TABLE MOVIES_ACTORS( movie_id INT REFERENCES MOVIES(movie_id),
                             PRIMARY KEY ( movie_id, actor_id ) );
 ```
 
-## Modifying Fields
+## Modifying Columns
 
 To add a column we use the `ALTER` statement to add a column.  As always we have to define the field's data type and contatraints at the time of creation.
 
@@ -225,4 +229,66 @@ ALTER COLUMN last_name type VARCHAR ( 50 );
 ```
 
 Adding constraints on a field after its creation is a little bit more tricky and should be avoided through appropiate design.  For more information on how to do it [see here](https://www.cockroachlabs.com/docs/stable/add-constraint.html).
+
+# Data Manipulation
+
+## Inserting Data
+
+To insert records into a table, follow the following template:
+
+```sql
+insert into tablename (colname1, colname2, ...)
+values (value1, value2, ...);
+```
+
+If you are adding a value to every column in the table you can use shoerthand notation by omitting the column names in the query above.  However, keep in mind that while we don't insert values into  `SERIAL` columns, they are still a column in the table so we do have to specify that we are only adding values to all the other columns only and cannot use the shorthand notation.
+
+```sql
+-- the first col in this table is the id which is a serial
+-- the query specifies the values are going to all other columns
+INSERT INTO OWNERS(first_name, last_name, city, province)
+VALUES ( 'Paula', 'Amaya', 'Toronto', 'ON' ),
+       ( 'Claudia', 'Amaya', 'Toronto', 'ON' ),
+       ( 'Bob', 'Smith', 'Vancouver', 'BC' ),
+       ( 'Fanny', 'Lu', 'Montreal', 'QC' );
+```
+
+## Updating Data
+
+To update data in a table, follow the following template:
+
+```sql
+update tablename
+set colname = newvalue
+where colname = somevalue;
+```
+
+When targeting a specific record, it's usually a good idea to use the PK as the `WHERE` clause because you know that is a unique entry in the record.
+
+```sql
+UPDATE owners
+SET city = 'Leduc',
+    province = 'AB'
+WHERE id = 2;
+```
+
+## Deleting Data
+
+To update data in a table, follow the following template:
+
+```sql
+delete from tablename
+where colname = somevalue;
+```
+
+As with all other manipulation queries, you can maniipulate multiple records at a time.
+
+```sql
+-- remove all Oakville records
+DELETE FROM owners
+WHERE city = 'Oakville'
+```
+  
+
+
 
