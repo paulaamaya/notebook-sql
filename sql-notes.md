@@ -13,6 +13,7 @@
   - [Transaction Control Language (TCL)](#transaction-control-language-tcl)
 - [Data Definition](#data-definition)
   - [Creating Tables](#creating-tables)
+  - [Modifying Fields](#modifying-fields)
 
 ---
 
@@ -172,7 +173,7 @@ Comitted statements cannot be udone.  However, the `ROLLBACK` clause reverts all
 
 To connect to your local database using from the command line, use the command `psql -U postgres -h localhost database_name`.  To connect to a specific database while already in psql, simply use the meta command `\c database_name`.
 
-To create a new database use the follwing command
+To create a new database use the following command:
 
 ```sql
 create database database_name;
@@ -196,6 +197,32 @@ CREATE TABLE MOVIES( movie_id serial PRIMARY KEY,
                      -- FOREIGN KEY field
                      director_id INT REFERENCES DIRECTORS(director_id) );
 ```                     
-              
 
+A **junction table** maps two or more tables together by referencing the PK's of each data table. It contains a number of foreign keys, each in a many-to-one relationship from the junction table to the individual data tables. The PK of the junction table is typically composed of the FK columns themselves.
+
+```sql
+CREATE TABLE MOVIES_ACTORS( movie_id INT REFERENCES MOVIES(movie_id),
+                            actor_id INT REFERENCES ACTORS(actor_id),
+                            PRIMARY KEY ( movie_id, actor_id ) );
+```
+
+## Modifying Fields
+
+To add a column we use the `ALTER` statement to add a column.  As always we have to define the field's data type and contatraints at the time of creation.
+
+```sql
+ALTER TABLE directors
+ADD COLUMN email VARCHAR ( 50 ) UNIQUE,
+ADD COLUMN age INT NOT NULL;
+```
+
+To modify a field's data type, you use the `ALTER` keyword both on the table and the column along with the  `TYPE` keyword.
+
+```sql
+ALTER TABLE directors
+ALTER COLUMN nationality type CHAR ( 3 ),
+ALTER COLUMN last_name type VARCHAR ( 50 );
+```
+
+Adding constraints on a field after its creation is a little bit more tricky and should be avoided through appropiate design.  For more information on how to do it [see here](https://www.cockroachlabs.com/docs/stable/add-constraint.html).
 
