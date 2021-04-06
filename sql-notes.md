@@ -173,7 +173,7 @@ Comitted statements cannot be udone.  However, the `ROLLBACK` clause reverts all
 
 --- 
 
-# Data Definition
+# DDL
 
 To connect to your local database using from the command line, use the command `psql -U postgres -h localhost database_name`.  To connect to a specific database while already in psql, simply use the meta command `\c database_name`.
 
@@ -230,7 +230,7 @@ ALTER COLUMN last_name type VARCHAR ( 50 );
 
 Adding constraints on a field after its creation is a little bit more tricky and should be avoided through appropiate design.  For more information on how to do it [see here](https://www.cockroachlabs.com/docs/stable/add-constraint.html).
 
-# Data Manipulation
+# DML
 
 ## Inserting Data
 
