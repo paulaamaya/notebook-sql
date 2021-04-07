@@ -11,13 +11,16 @@
   - [Data Manipulation Language (DML)](#data-manipulation-language-dml)
   - [Data Control Langauge (DCL)](#data-control-langauge-dcl)
   - [Transaction Control Language (TCL)](#transaction-control-language-tcl)
-- [Data Definition](#data-definition)
+- [DDL](#data-definition)
   - [Creating Tables](#creating-tables)
   - [Modifying Columns](#modifying-columns)
-- [Data Manipulation](#data-manipulation)
+- [DML](#data-manipulation)
   - [Inserting Data](#inserting-data)
   - [Updating Data](#updating-data)
   - [Deleting Data](#deleting-data)
+- [Queries](#queries)
+  - [Odering Results](#ordering-results)
+  - [Limiting Queries](#limiting-queries)
 
 ---
 
@@ -26,6 +29,7 @@
 Structured Query Language (SQL) is a declarative programming language that allows you to create,manipulate, and share data specifically from Relational Database Management Systems (RDBMS).
 
 **Database:** Systematic collection of data.  Their main goal is to organize large amounts of data that can be quickly retrieved. They must **compact, well-structured, and efficient**.
+
 - Data is stored in table records, not individual cells.
 - All calculations and operations are done after data retrieval.
 
@@ -38,6 +42,7 @@ Structured Query Language (SQL) is a declarative programming language that allow
 ## Tables
 
 Contain **fields** (columns) and **records** (rows) of data.
+
 - Each field has a defined data type.
 - Each field should contain only one value per record.
 - Each row of sata should be unique.
@@ -71,22 +76,27 @@ See here for a full list of [PostgeSQL data types](https://www.postgresql.org/do
 Database designers will plot the entire database system using two common methods.
 
 ### Entity-Relationship Diagram
+
 ![ER Diagram](images/er-diagram.png)
 
 ### Schema Diagram
+
 ![Relational Schema Diagram](images/relational-schema.png)
 
 ### Keys
 
 **Primary Key:** A field (or set of fields) whose value exists and is unique for every record in a table.
+
 - The PK is the **unique identifier of a table** .  A table can have at most one PK
 - The PK field(s) cannot contain `null` values
 
 **Foreign Key:** A field (or set of fields) in one table, that refers to the primary key in another table.  The table with the FK is called the child table, and the table with the PK is called the parent table.
+
 - FK's identify relationships between tables
 - Preserve data integrity (cannot enter a value in the FK field that has not been declared in the parent table)
 
 **Unique Key:**  Unique keys ensure that all values in a fiels are different.  A PK automatically has a unique constraint on it.
+
 - May contain `null` values
 - A table may have multiple unique keys
 
@@ -102,20 +112,20 @@ Statements that allow us to define or modify data structures and objects (e.g. t
 
 ```sql
 -- create a table with a single column
-create table sales_data (purchase_number int);
+CREATE TABLE SALES_DATA(purchase_number INT);
 
 -- add another column to it
-alter table sales_data
-add column date_of_purchase date;
+ALTER TABLE sales_data
+ADD COLUMN date_of_purchase DATE;
 
 -- rename the table
-rename table sales_data to sales;
+rename TABLE sales_data TO sales;
 
 -- delete the table
-drop table sales;
+DROP TABLE sales;
 
 -- alternatively, just empty the table
-truncate table sales;
+TRUNCATE TABLE sales;
 ```
 
 ## Data Manipulation Language (DML)
@@ -124,54 +134,55 @@ Statements that allow us to manipulate the data in a database (e.g. the `SELECT`
 
 ```sql
 -- retrieve entire table
-select * from sales;
+SELECT *
+FROM sales;
 
 -- insert data into table
 -- equivalent to INSERT INTO sales (purchase_number, date_of_purchase) VALUES (001, '2021-10-11');
-insert into sales values (001, "2021-10-11");
-
-update sales
-set date_of_purchase_ = "2020-12-12"
-where purchase = 1;
+INSERT INTO sales
+VALUES ( 001, "2021-10-11" );
+UPDATE sales
+SET date_of_purchase_ = "2020-12-12"
+WHERE purchase = 1;
 ```
 
 While the `TRUNCATE` statement removes all the records contained in the table, `DELETE` allows us to specify precisely what you would like removed.
 
 ```sql
-delete from sales
-where purchase_number = 1;
+DELETE FROM sales
+WHERE purchase_number = 1;
 ```
 
-## Data Control Langauge (DCL)
+## Data Control Language (DCL)
 
 Statements that allow us to manage the rights users have in a database.  You can `GRANT` OR `REVOKE` priviledges to users.  Both of these keywords have identical syntax.
 
 ```sql
 -- GRANT syntax
-grant permission_type
-on database_name.table_name 
-to "username"@"localhost"
+GRANT permission_type ON database_name.table_name 
+TO "username" @ "localhost"
 
--- the user Frank can only SELECT 
+-- the user Frank can only SELECT
 -- and only from the customers table in the database
-create user "frank"@"localhost" identified by "password";
-grant select on sales.customers to "frank"@"localhost";
+CREATE USER "frank" @ "localhost" identified BY "password";
+
+GRANT SELECT ON sales.customers 
+TO "frank" @ "localhost";
 ```
 
-## Transaction Control Language (TCL) 
+## Transaction Control Language (TCL)
 
 The `COMMIT` statement will save the changes you've made, allowing other users to access the modified version.  It only works with changes related to the DML keywords `INSERT`, `DELETE`, and `UPDATE`.
 
 ```sql
-update customers
-set last_name = "Johnson"
-where custumer_id = 4
-commit;
+UPDATE customers
+SET last_name = "Johnson"
+WHERE custumer_id = 4 COMMIT;
 ```
 
 Comitted statements cannot be udone.  However, the `ROLLBACK` clause reverts all changes since the last commit or rollback.
 
---- 
+---
 
 # DDL
 
@@ -180,7 +191,7 @@ To connect to your local database using from the command line, use the command `
 To create a new database use the following command:
 
 ```sql
-create database database_name;
+CREATE DATABASE database_name;
 ```
 
 ## Creating Tables
@@ -200,7 +211,7 @@ CREATE TABLE MOVIES( movie_id serial PRIMARY KEY,
                      release_date DATE,
                      -- FOREIGN KEY field
                      director_id INT REFERENCES DIRECTORS(director_id) );
-```                     
+```
 
 A **junction table** maps two or more tables together by referencing the PK's of each data table. It contains a number of foreign keys, each in a many-to-one relationship from the junction table to the individual data tables. The PK of the junction table is typically composed of the FK columns themselves.
 
@@ -237,8 +248,8 @@ Adding constraints on a field after its creation is a little bit more tricky and
 To insert records into a table, follow the following template:
 
 ```sql
-insert into tablename (colname1, colname2, ...)
-values (value1, value2, ...);
+INSERT INTO TABLENAME(colname1, colname2, ...)
+VALUES ( value1, value2, ... );
 ```
 
 If you are adding a value to every column in the table you can use shoerthand notation by omitting the column names in the query above.  However, keep in mind that while we don't insert values into  `SERIAL` columns, they are still a column in the table so we do have to specify that we are only adding values to all the other columns only and cannot use the shorthand notation.
@@ -258,9 +269,9 @@ VALUES ( 'Paula', 'Amaya', 'Toronto', 'ON' ),
 To update data in a table, follow the following template:
 
 ```sql
-update tablename
-set colname = newvalue
-where colname = somevalue;
+UPDATE tablename
+SET colname = newvalue
+WHERE colname = somevalue;
 ```
 
 When targeting a specific record, it's usually a good idea to use the PK as the `WHERE` clause because you know that is a unique entry in the record.
@@ -277,8 +288,8 @@ WHERE id = 2;
 To update data in a table, follow the following template:
 
 ```sql
-delete from tablename
-where colname = somevalue;
+DELETE FROM tablename
+WHERE colname = somevalue;
 ```
 
 As with all other manipulation queries, you can maniipulate multiple records at a time.
@@ -286,9 +297,152 @@ As with all other manipulation queries, you can maniipulate multiple records at 
 ```sql
 -- remove all Oakville records
 DELETE FROM owners
-WHERE city = 'Oakville'
+WHERE city = 'Oakville';
 ```
-  
 
+# Queries
 
+We can retrieve entire columns, and these are simplest queries we can make:
 
+```sql
+SELECT * FROM actors;
+
+SELECT first_name,
+       last_name
+FROM actors;
+```
+
+We can use a `WHERE` clause to filter the results of a query even further:
+
+```sql
+SELECT movie_name
+FROM movies
+WHERE age_certificate = '18'
+      AND release_date > '1999-12-31'
+      AND movie_length >= 120;
+```
+
+The examples above illutrate querying records where a field is equal to a specific value.  We can also **query records where a field has a value `IN` or `NOT IN` an accepting set of values**.
+
+```sql
+SELECT movie_name
+FROM movies
+WHERE age_certificate IN ( '15', '18' )
+      AND movie_lang NOT IN ( 'English', 'Chinese' );
+```
+
+We can also use some baby regex to query records through pattern matching, using the `LIKE` statement.
+
+- `%` any (including zero) number of arbitrary characters
+- `_`exactly one arbitrary character
+
+```sql
+-- returns all records of actors who names begin with M or end in 'la'
+SELECT *
+FROM actors
+WHERE first_name LIKE 'M%'
+      OR first_name LIKE '%la';
+```
+
+We can also use the `BETWEEN` statement to query in an **inclusive** range.
+
+```sql
+SELECT first_name,
+       last_name
+FROM directors
+WHERE nationality IN ( 'British', 'German', 'French' )
+      AND date_of_birth BETWEEN '1950-01-01' AND '1980-12-31';
+```
+
+## Ordering Results
+
+To order the results produced by a query, use the following syntax:
+
+```sql
+SELECT colname1,
+       colname2
+FROM tablename
+ORDER BY colname3;
+```
+
+For instance to see a table ordered, not by primary key, but by the first names in the records you could do the following query,
+
+```sql
+SELECT *
+FROM actors
+ORDER BY first_name;
+```
+
+The default ordering is in ascending order, but if you want it in descending order you just have to specify this using the `DESC` keyword.
+
+```sql
+SELECT *
+FROM actors
+ORDER BY first_name DESC;
+```
+
+> `NULL` is considered the **highest** value.  So be careful when ordering records in descending order since null values will show up at the top.
+> In these cases it is useful to include a `IS NOT NULL` statement in the query.
+
+# Limiting Queries
+
+You can set an upper bound for the number of records you want the query to return with a `LIMIT` clause.  
+
+Suppose you want to query the three movies with the lowest domestic  and the three movies with the highest domestic revenues.  The query would look like this:
+
+```sql
+-- Three lowest revenues
+SELECT *
+FROM movie_revenues
+ORDER BY domestic_takings
+LIMIT 3;
+
+-- Three highest revenues
+SELECT *
+FROM movie_revenues
+WHERE domestic_takings IS NOT NULL
+ORDER BY domestic_takings DESC
+LIMIT 3;
+```
+
+We can also offset the limit clause.  The `OFFSET`  clause skips the offset rows **inclusively** before beginning to return the rows. If you use both `LIMIT` and `OFFSET` clauses, the OFFSET skips offset rows first before the LIMIT constrains the number of rows.
+
+```sql
+-- Returns actors with id 6-10 only
+SELECT *
+FROM actors
+ORDER BY actor_id
+LIMIT 5 OFFSET 5;
+```
+
+You can also use a `FETCH` to return a certain number of rows of data.  The syntax is as follows:
+
+```sql
+SELECT col1,
+       col2
+FROM table_name
+FETCH FIRST X ROW ONLY;
+
+SELECT col1,
+       col2
+FROM table_name
+OFFSET Y
+FETCH NEXT X ROW ONLY;
+```
+
+So an equivalent alternative to the queries above would be,
+
+```sql
+-- Return the three movies with the lowest revenue
+SELECT *
+FROM movie_revenues
+ORDER BY domestic_takings
+FETCH FIRST 3 ROW only;
+
+-- Returns actors with id 6-10 only
+SELECT *
+FROM actors
+ORDER BY actor_id
+OFFSET 5
+FETCH NEXT 5 ROW ONLY;
+```
