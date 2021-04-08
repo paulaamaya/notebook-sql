@@ -21,6 +21,9 @@
 - [Queries](#queries)
   - [Odering Results](#ordering-results)
   - [Limiting Queries](#limiting-queries)
+  - [Field Aliases](#field-aliases)
+  - [Concatenation](#concatenation)
+    - [String Concatenation](#string-concatenation)
 
 ---
 
@@ -383,6 +386,7 @@ ORDER BY first_name DESC;
 
 > `NULL` is considered the **highest** value.  So be careful when ordering records in descending order since null values will show up at the top.
 > In these cases it is useful to include a `IS NOT NULL` statement in the query.
+<br>
 
 # Limiting Queries
 
@@ -445,4 +449,85 @@ FROM actors
 ORDER BY actor_id
 OFFSET 5
 FETCH NEXT 5 ROW ONLY;
+```
+
+You can also query in a way that only returns the distinct values in a field.  For instance if we query the `movie_lang` column in our `MOVIES` table, we get a bunch of repeated rows.  To prevent repeated data, use the `DISTINCT` keyword.
+
+```sql
+SELECT DISTINCT movie_lang
+FROM movies
+ORDER BY movie_lang;
+```
+
+You can also query **distinct combinations of fields**.  Continuing our example, you could query the distinct comnbinations of movie languages and ratings,
+
+```sql
+SELECT DISTINCT movie_lang, age_certificate
+FROM movies
+ORDER BY movie_lang;
+```
+
+## Field Aliases
+
+You can rename a column in the results set.  For example you may want to temporarily rename a column in a query for clarity purposes.  The syntax is as follows:
+
+```sql
+SELECT colname AS alias
+FROM table_name;
+```
+
+> **Note:** Because of the order SQL is compiled in, the column alias will be recognized by the `ORDER` statement, but not the `WHERE` clause.
+>
+>It is good practice to just use the orginal field name whenever possible and reserve the alias for display clarity only.
+<br>
+
+## Concatenation
+
+```sql
+
+SELECT CONCAT_WS(' ', colname1, colname2) AS new_colname
+FROM table_name;
+```
+
+### String Concatenation
+
+We can do basic string concatenation.  The syntax for this is:
+
+```sql
+SELECT 'string1' || 'string2' AS new_string;
+```
+
+```sql
+SELECT 'hello' || ' ' || 'world!' AS hello_world;
+```
+
+to produce the string `hello world!`.  This isn't particularly useful, but the follwing sections will build on this idea of concatenation.
+
+### Column Concatenation
+
+You may want to concatenate fields and give their result an alias.  The syntax for this is:
+
+```sql
+SELECT CONCAT(colname1, colname2) AS new_colname
+FROM table_name;
+```
+
+This does not change the strucutre of the table.  It just the data of various columns as a single column.
+
+For instance, we commonly want to concatenate first name and last name fields into a single filed.  You can do this by means of the following query.
+
+```sql
+SELECT CONCAT(first_name, last_name) AS full_name
+FROM actors
+WHERE first_name LIKE 'A%'
+ORDER BY last_name;
+```
+
+The `CONCAT` keyword concatenates data witout any separator character.  To add a separator charater use the `CONCAT_WS` which works exactly the same but takes in a separator character as its first argument. See the improved query below.
+
+```sql
+SELECT CONCAT_WS(' ', first_name, last_name) AS full_name
+FROM actors
+WHERE first_name LIKE 'A%'
+ORDER BY last_name;
 ```
