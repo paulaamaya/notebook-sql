@@ -24,6 +24,7 @@
   - [Field Aliases](#field-aliases)
   - [Concatenation](#concatenation)
     - [String Concatenation](#string-concatenation)
+    - [Field Concatenation](#field-concatenation)
 
 ---
 
@@ -503,7 +504,7 @@ SELECT 'hello' || ' ' || 'world!' AS hello_world;
 
 to produce the string `hello world!`.  This isn't particularly useful, but the follwing sections will build on this idea of concatenation.
 
-### Column Concatenation
+### Field Concatenation
 
 You may want to concatenate fields and give their result an alias.  The syntax for this is:
 
