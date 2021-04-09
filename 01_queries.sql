@@ -52,3 +52,15 @@ SELECT *
 FROM actors
 WHERE first_name IS NULL
       OR date_of_birth IS NULL;
+SELECT movie_id,
+       COALESCE(domestic_takings, 0),
+       COALESCE(international_takings, 0),
+       -- prevents summation from resulting in NULL
+       ( COALESCE(domestic_takings, 0) + COALESCE(international_takings, 0) ) AS total_takings
+FROM movie_revenues;
+SELECT CONCAT_WS(' ', first_name, last_name) AS full_name,
+       COALESCE(date_of_birth, 'DOB not provided') AS date_of_birth
+FROM actors;
+SELECT COALESCE(first_name, 'First name not provided') AS first_name,
+       COALESCE(last_name, 'Last name not provided') AS last_name
+FROM actors;

@@ -20,6 +20,7 @@
   - [Deleting Data](#deleting-data)
 - [TCL](#transaction-control)
 - [Queries](#queries)
+  - [Handling Null Values](#handling-`null`-values)
   - [Odering Results](#ordering-results)
   - [Limiting Results](#limiting-results)
   - [Field Aliases](#field-aliases)
@@ -351,7 +352,7 @@ WHERE age_certificate IN ( '15', '18' )
 We can also use some baby regex to query records through pattern matching, using the `LIKE` statement.
 
 - `%` any (including zero) number of arbitrary characters
-- `_`exactly one arbitrary character
+- `_` exactly one arbitrary character
 
 ```sql
 -- returns all records of actors who names begin with M or end in 'la'
@@ -374,6 +375,32 @@ WHERE nationality IN ( 'British', 'German', 'French' )
 > **Operator Precedence**
 >
 >In the execution of a query, the operator `AND` is applied first and the operator `OR` second.  To circumvent problems, make it a practice to use appropiate parantheses.
+
+## Handling `NULL` Values
+
+In some cases it may be inconvenient to deal with null values in your queries.  For example, `INT` + `NULL` = `NULL` which could cause some problems. Additionally, you may wish to indicate empty values in your results with a string on specific number instead of just null.
+
+The `COALESCE` function accepts an unlimited number of arguments. It returns the first argument that is not null. If all arguments are null, the `COALESCE` function will return null.
+
+Notice how this function allows us to refine the query below:
+
+```sql
+SELECT movie_id,
+       COALESCE(domestic_takings, 0),
+       COALESCE(international_takings, 0),
+       -- prevents summation from resulting in NULL
+       ( COALESCE(domestic_takings, 0) + COALESCE(international_takings, 0) ) AS total_takings
+FROM movie_revenues;
+```
+
+It is important to note that `COALESCE` does not impact the structure of the table, it simply helps to improve query results.  See another example below:
+
+```sql
+The NULL  values in the table will not change, they 
+SELECT COALESCE(first_name, 'First name not provided') AS first_name,
+       COALESCE(last_name, 'Last name not provided') AS last_name
+FROM actors;
+```
 
 ## Ordering Results
 
@@ -404,6 +431,7 @@ ORDER BY first_name DESC;
 
 > `NULL` is considered the **highest** value.  So be careful when ordering records in descending order since null values will show up at the top.
 > In these cases it is useful to include a `IS NOT NULL` statement in the query.
+
 
 ## Limiting Results
 
@@ -500,7 +528,6 @@ FROM table_name;
 ## Concatenation
 
 ```sql
-
 SELECT CONCAT_WS(' ', colname1, colname2) AS new_colname
 FROM table_name;
 ```
@@ -554,6 +581,8 @@ ORDER BY last_name;
 
 Aggregate functions peform a calculation on column data and return as single row containing the result.  They ignore `NULL` values unless told not to.
 
+> Before discussing aggregate functions, it is worth mentioning the `ROUND(num, decimal_places)` function, which takes in a numeric value and an optional number of decimal places to round to.  It is usually applied to the single values that aggregate functions return.
+
 The `COUNT` function returns the **number of non-null records in a field**.  It follows the following syntax:
 
 ```sql
@@ -597,6 +626,10 @@ The `AVG` function returns the mean value in a field.  The syntax is as follows:
 SELECT AVG(colname)
 FROM table_name;
 ```
+
+
+
+
 
 ## Grouping Results
 
@@ -719,7 +752,7 @@ GROUP BY colname1
 HAVING AGG(colname2) another condition
 ```
 
-We may wish to look at the average rating of adult movies (15+) per language.  Which languages have an average age certificate strictly higher than 15?  The follwing query gives us what we need:
+We may wish to look at the average rating of adult movies (15+) per language.  Which languages have an average age certificate strictly higher than 15?  The following query gives us what we need:
 
 ```sql
 SELECT movie_lang,
