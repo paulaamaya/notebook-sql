@@ -27,7 +27,6 @@ SELECT first_name,
 FROM directors
 WHERE nationality IN ( 'British', 'French', 'German' )
       AND ( date_of_birth BETWEEN '1950-01-01' AND '1980-12-31' );
--- !!
 SELECT *
 FROM directors
 WHERE nationality = 'American'
@@ -42,17 +41,13 @@ WHERE gender = 'F'
       AND date_of_birth IS NOT NULL
 ORDER BY date_of_birth DESC
 LIMIT 10;
--- !!
 SELECT *
 FROM movie_revenues
 WHERE international_takings IS NOT NULL
 ORDER BY international_takings DESC
 LIMIT 3;
-
 SELECT CONCAT_WS(' ', first_name, last_name) AS full_name
 FROM directors;
-
-
 SELECT *
 FROM actors
 WHERE first_name IS NULL
