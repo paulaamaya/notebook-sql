@@ -18,13 +18,17 @@
   - [Inserting Data](#inserting-data)
   - [Updating Data](#updating-data)
   - [Deleting Data](#deleting-data)
+- [TCL](#transaction-control)
 - [Queries](#queries)
   - [Odering Results](#ordering-results)
-  - [Limiting Queries](#limiting-queries)
+  - [Limiting Results](#limiting-results)
   - [Field Aliases](#field-aliases)
   - [Concatenation](#concatenation)
     - [String Concatenation](#string-concatenation)
     - [Field Concatenation](#field-concatenation)
+- [Aggregate Functions](#aggregate-functions)
+  - [Grouping Results](#grouping-results)
+  - [Filtering Groups](#filtering-groups)
 
 ---
 
@@ -53,9 +57,10 @@ Contain **fields** (columns) and **records** (rows) of data.
 
 ### Field Constraints
 
-1. **Unique:** Ensures that a field can only contain unique values.  Throws an error if a field contains duplicate values.
-2. **Not Null:** Ensures that  a field cannot constain `NULL` values.
-3. **Check:**  Ensures that data in a field satiisfies a specific `BOOLEAN` expression.
+1. `UNIQUE`: Ensures that a field can only contain unique values.  Throws an error if a field contains duplicate values.
+2. `NOT NULL`: Ensures that  a field cannot constain `NULL` values.
+3. `SET DEFAULT`: Assigns a particular default value to every record in a field.  A value different from the default can be stored in the field only if it is specifically indicated.
+4. **Check:**  Ensures that data in a field satiisfies a specific `BOOLEAN` expression.
 
 ## Data Types
 
@@ -181,7 +186,7 @@ The `COMMIT` statement will save the changes you've made, allowing other users t
 ```sql
 UPDATE customers
 SET last_name = "Johnson"
-WHERE custumer_id = 4 COMMIT;
+WHERE customer_id = 4 COMMIT;
 ```
 
 Comitted statements cannot be udone.  However, the `ROLLBACK` clause reverts all changes since the last commit or rollback.
@@ -245,6 +250,8 @@ ALTER COLUMN last_name type VARCHAR ( 50 );
 
 Adding constraints on a field after its creation is a little bit more tricky and should be avoided through appropiate design.  For more information on how to do it [see here](https://www.cockroachlabs.com/docs/stable/add-constraint.html).
 
+---
+
 # DML
 
 ## Inserting Data
@@ -304,9 +311,15 @@ DELETE FROM owners
 WHERE city = 'Oakville';
 ```
 
+---
+
+# Transaction Control
+
+---
+
 # Queries
 
-We can retrieve entire columns, and these are simplest queries we can make:
+We can retrieve entire columns, and these are simplest queries we can make.
 
 ```sql
 SELECT * FROM actors;
@@ -326,7 +339,7 @@ WHERE age_certificate = '18'
       AND movie_length >= 120;
 ```
 
-The examples above illutrate querying records where a field is equal to a specific value.  We can also **query records where a field has a value `IN` or `NOT IN` an accepting set of values**.
+The examples above illustrate querying records where a field is equal to a specific value.  We can also query records where a field has a value `IN` or `NOT IN` an accepting set of values.
 
 ```sql
 SELECT movie_name
@@ -358,9 +371,13 @@ WHERE nationality IN ( 'British', 'German', 'French' )
       AND date_of_birth BETWEEN '1950-01-01' AND '1980-12-31';
 ```
 
+> **Operator Precedence**
+>
+>In the execution of a query, the operator `AND` is applied first and the operator `OR` second.  To circumvent problems, make it a practice to use appropiate parantheses.
+
 ## Ordering Results
 
-To order the results produced by a query, use the following syntax:
+You can order the results produced by a query according to a filed other than the id.  To do so, use the following syntax:
 
 ```sql
 SELECT colname1,
@@ -387,9 +404,8 @@ ORDER BY first_name DESC;
 
 > `NULL` is considered the **highest** value.  So be careful when ordering records in descending order since null values will show up at the top.
 > In these cases it is useful to include a `IS NOT NULL` statement in the query.
-<br>
 
-# Limiting Queries
+## Limiting Results
 
 You can set an upper bound for the number of records you want the query to return with a `LIMIT` clause.  
 
@@ -480,7 +496,6 @@ FROM table_name;
 > **Note:** Because of the order SQL is compiled in, the column alias will be recognized by the `ORDER` statement, but not the `WHERE` clause.
 >
 >It is good practice to just use the orginal field name whenever possible and reserve the alias for display clarity only.
-<br>
 
 ## Concatenation
 
@@ -532,3 +547,198 @@ FROM actors
 WHERE first_name LIKE 'A%'
 ORDER BY last_name;
 ```
+
+---
+
+# Aggregate Functions
+
+Aggregate functions peform a calculation on column data and return as single row containing the result.  They ignore `NULL` values unless told not to.
+
+The `COUNT` function returns the **number of non-null records in a field**.  It follows the following syntax:
+
+```sql
+SELECT COUNT(colname)
+FROM table_name;
+```
+
+So for example we could use this function to see how many movies in our database are in English.
+
+```sql
+SELECT COUNT(*)
+FROM movies
+WHERE movie_lang = 'English';
+```
+
+The `SUM` function **adds all numeric values in a field**.  The syntax is the following:
+
+```sql
+SELECT SUM(colname)
+FROM table_name;
+```
+
+We could use this function to see the total domestic takings of all movies that made more than 100M.
+
+```sql
+SELECT SUM(domestic_takings)
+FROM movie_revenues
+WHERE domestic_takings >= 100.0;
+```
+
+The `MAX` and `MIN` functions return exactly what you would expect.  The syntax is as follows:
+
+```sql
+SELECT MAX(colname)
+FROM table_name;
+```
+
+The `AVG` function returns the mean value in a field.  The syntax is as follows:
+
+```sql
+SELECT AVG(colname)
+FROM table_name;
+```
+
+## Grouping Results
+
+So far we have just been using aggregate functions to return a value accross the entire field.  But it would be more useful to apply aggregate functions across **distinct entries in a field**.
+
+The `GROUP BY` statement groups records that have the same value in a field and displays them as "summary" rows.  This **must be placed immeditely after `WHERE` and before `ORDER BY`**.  Since in most cases, when you need an aggregate function you must group the results too, it commonly follows the following syntax:
+
+```sql
+SELECT colname1, AGG(colname3)
+FROM table_name
+WHERE ...
+GROUP BY colname1
+ORDER BY colname1;
+```
+
+> **Pro Tip:** Always include the field you have grouped your results by in the `SELECT` statement and order by that field (optional).
+
+For instance, say you want to count the number of movies per language that appear in your database:
+
+```sql
+SELECT movie_lang,
+       COUNT(*)
+FROM movies
+GROUP BY movie_lang
+ORDER BY movie_lang;
+```
+
+movie_lang  | count
+------------| -------
+ Chinese    |     5
+ English    |    38
+ German     |     1
+ Japanese   |     4
+ Korean     |     1
+ Portuguese |     2
+ Spanish    |     1
+ Swedish    |     1
+
+You can take a look at the oldest birthdate of actors per gender:
+
+```sql
+SELECT gender,
+       MIN(date_of_birth)
+FROM actors
+GROUP BY gender;
+```
+
+ gender |    min     
+--------|------------
+ M      | 1901-02-01
+ F      | 1913-11-05
+
+You can also **group by distinct combinations of field values**.  Suppose you want the average movie length per language-rating combination.  The query would look like this:
+
+```sql
+SELECT movie_lang,
+       age_certificate,
+       AVG(movie_length) AS avg_length
+FROM movies
+GROUP BY movie_lang,
+         age_certificate
+ORDER BY movie_lang;
+```
+
+ movie_lang | age_certificate |      avg_length      
+------------|-----------------|----------------------
+ Chinese    | 12              | 124.0000000000000000
+ Chinese    | 15              | 113.0000000000000000
+ English    | 12              | 132.7142857142857143
+ English    | U               |  98.2500000000000000
+ English    | PG              | 124.0000000000000000
+ English    | 15              | 136.5000000000000000
+ English    | 18              | 125.0000000000000000
+ German     | 15              | 165.0000000000000000
+ Japanese   | U               | 113.5000000000000000
+ Japanese   | 18              | 109.5000000000000000
+ Korean     | 18              | 130.0000000000000000
+ Portuguese | 18              | 145.0000000000000000
+ Portuguese | 15              | 140.0000000000000000
+ Spanish    | PG              |  98.0000000000000000
+ Swedish    | 15              | 128.0000000000000000
+
+ One more fun query that gives us the min and max length of English movies per age certificate!
+
+ ```sql
+SELECT age_certificate,
+       MIN(movie_length) AS shortest,
+       MAX(movie_length) AS longest
+FROM movies
+WHERE movie_lang = 'English'
+GROUP BY age_certificate
+ORDER BY age_certificate DESC;
+ ```
+
+ age_certificate | shortest | longest 
+-----------------|----------|---------
+ U               |       87 |     120
+ PG              |      112 |     150
+ 18              |      112 |     132
+ 15              |      115 |     168
+ 12              |      104 |     149
+
+## Filtering Groups
+
+We would like to be able to filter group data in the same way that we filter individual records.  The `HAVING` clause is like `WHERE` but operates on grouped records returned by a `GROUP BY`.
+
+- HAVING filters summarized group records.  **Only the groups that meet the `HAVING` criteria will be returned**.
+- `WHERE` filters individual records. **Only the records that meet the `WHERE` criteria will be returned**.
+- `HAVING` requires that a `GROUP BY` clause is present.
+- Both `WHERE` and `HAVING` can be used in the same query at the same time.
+
+It is important that the syntax be in the right order.  Here is an example of a query using all the tools we've discussed so far:
+
+```sql
+SELECT colname1,
+       AGG(colname2)
+FROM table_name
+WHERE SOME condition
+GROUP BY colname1
+HAVING AGG(colname2) another condition
+```
+
+We may wish to look at the average rating of adult movies (15+) per language.  Which languages have an average age certificate strictly higher than 15?  The follwing query gives us what we need:
+
+```sql
+SELECT movie_lang,
+       AVG(CAST(age_certificate AS INT)) AS avg_rating,
+       COUNT(*) AS num_adult_movies
+FROM movies
+-- WHERE : Filter table records
+WHERE age_certificate IN ( '15', '18' )
+GROUP BY movie_lang
+-- HAVING : Filter 
+HAVING AVG(CAST(age_certificate AS INT)) > 15
+ORDER BY avg_rating DESC;
+```
+
+movie_lang |     avg_rating      | num_adult_movies 
+------------|---------------------|------------------
+ Korean     | 18.0000000000000000 |                1
+ Japanese   | 18.0000000000000000 |                2
+ Portuguese | 16.5000000000000000 |                2
+ English    | 15.7500000000000000 |               16
+
+
