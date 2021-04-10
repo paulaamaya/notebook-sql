@@ -297,14 +297,14 @@ WHERE id = 2;
 
 ## Deleting Data
 
-To update data in a table, follow the following template:
+To delete targeted data in a table, follow the following template:
 
 ```sql
 DELETE FROM tablename
 WHERE colname = somevalue;
 ```
 
-As with all other manipulation queries, you can maniipulate multiple records at a time.
+You can delete multiple records at a time, as long as they meet the `WHERE` clause.
 
 ```sql
 -- remove all Oakville records
@@ -312,9 +312,18 @@ DELETE FROM owners
 WHERE city = 'Oakville';
 ```
 
+- `DROP`: Dropping a table you will wipe out its records, the table as a structure, and any related objects like indexes. Dropping is absolutely final and cannot be undone by a rollback.
+- `TRUNCATE`: Truncating a table will wipe out all the records in the table but the structure (data types, constraints, etc.) will remain intact.  Serial values will reset to their default starting value.
+- `DELETE`: Removes records row by row according to the `WHERE` condition.  If this condition is omitted, it will have the same effect as truncating (only much less efficient since it's done row-by-row).
+
+
 ---
 
 # Transaction Control
+
+The `COMMIT` statement is used to save the state of the data in the database at the moment of its execution.  
+
+Meanwhile, `ROLLBACK` will allow you to revert back to the last commit; all uncomitted changes will be discarded.  However, you cannot restore data to an state earlier than the last commit. 
 
 ---
 
@@ -431,7 +440,6 @@ ORDER BY first_name DESC;
 
 > `NULL` is considered the **highest** value.  So be careful when ordering records in descending order since null values will show up at the top.
 > In these cases it is useful to include a `IS NOT NULL` statement in the query.
-
 
 ## Limiting Results
 
@@ -627,10 +635,6 @@ SELECT AVG(colname)
 FROM table_name;
 ```
 
-
-
-
-
 ## Grouping Results
 
 So far we have just been using aggregate functions to return a value accross the entire field.  But it would be more useful to apply aggregate functions across **distinct entries in a field**.
@@ -736,7 +740,7 @@ ORDER BY age_certificate DESC;
 
 We would like to be able to filter group data in the same way that we filter individual records.  The `HAVING` clause is like `WHERE` but operates on grouped records returned by a `GROUP BY`.
 
-- HAVING filters summarized group records.  **Only the groups that meet the `HAVING` criteria will be returned**.
+- `HAVING` filters summarized group records.  **Only the groups that meet the `HAVING` criteria will be returned**.
 - `WHERE` filters individual records. **Only the records that meet the `WHERE` criteria will be returned**.
 - `HAVING` requires that a `GROUP BY` clause is present.
 - Both `WHERE` and `HAVING` can be used in the same query at the same time.
@@ -773,5 +777,3 @@ movie_lang |     avg_rating      | num_adult_movies
  Japanese   | 18.0000000000000000 |                2
  Portuguese | 16.5000000000000000 |                2
  English    | 15.7500000000000000 |               16
-
-
