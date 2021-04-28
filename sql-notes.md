@@ -314,7 +314,7 @@ WHERE city = 'Oakville';
 
 - `DROP`: Dropping a table you will wipe out its records, the table as a structure, and any related objects like indexes. Dropping is absolutely final and cannot be undone by a rollback.
 - `TRUNCATE`: Truncating a table will wipe out all the records in the table but the structure (data types, constraints, etc.) will remain intact.  Serial values will reset to their default starting value.
-- `DELETE`: Removes records row by row according to the `WHERE` condition.  If this condition is omitted, it will have the same effect as truncating (only much less efficient since it's done row-by-row).
+- `DELETE`: Removes records row by row according to the `WHERE` condition.  If this condition is omitted, it will have the same effect as truncating (only much less efficient since it's done row-by-row). **Serial values are not reset with `DELETE`**.
 
 
 ---
