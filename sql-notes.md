@@ -9,19 +9,19 @@
 - [SQL Theory](#sql-theory)
   - [Data Definition Language (DDL)](#data-definition-language-ddl)
   - [Data Manipulation Language (DML)](#data-manipulation-language-dml)
-  - [Data Control Langauge (DCL)](#data-control-langauge-dcl)
+  - [Data Control Language (DCL)](#data-control-language-dcl)
   - [Transaction Control Language (TCL)](#transaction-control-language-tcl)
-- [DDL](#data-definition)
+- [DDL](#ddl)
   - [Creating Tables](#creating-tables)
   - [Modifying Columns](#modifying-columns)
-- [DML](#data-manipulation)
+- [DML](#dml)
   - [Inserting Data](#inserting-data)
   - [Updating Data](#updating-data)
   - [Deleting Data](#deleting-data)
-- [TCL](#transaction-control)
+- [Transaction Control](#transaction-control)
 - [Queries](#queries)
-  - [Handling Null Values](#handling-`null`-values)
-  - [Odering Results](#ordering-results)
+  - [Handling `NULL` Values](#handling-null-values)
+  - [Ordering Results](#ordering-results)
   - [Limiting Results](#limiting-results)
   - [Field Aliases](#field-aliases)
   - [Concatenation](#concatenation)
@@ -46,7 +46,7 @@ Structured Query Language (SQL) is a declarative programming language that allow
 
 **Query:** Piece of code inducing the computer to execute a certain operation that will deliver the desired output.
 
-**Entity:** The smallest unit that can contain a meaningful set of data. E.g. a row (record) in a table represents its horizontal entity and a column (field) its vertical entity.
+**Entity:** The smallest unit that can contain a meaningful set of data - e.g. a row (record) in a table represents its horizontal entity and a column (field) its vertical entity.
 
 ## Tables
 
@@ -54,18 +54,18 @@ Contain **fields** (columns) and **records** (rows) of data.
 
 - Each field has a defined data type.
 - Each field should contain only one value per record.
-- Each row of sata should be unique.
+- Each row of data should be unique.
 
 ### Field Constraints
 
 1. `UNIQUE`: Ensures that a field can only contain unique values.  Throws an error if a field contains duplicate values.
 2. `NOT NULL`: Ensures that  a field cannot constain `NULL` values.
 3. `SET DEFAULT`: Assigns a particular default value to every record in a field.  A value different from the default can be stored in the field only if it is specifically indicated.
-4. **Check:**  Ensures that data in a field satiisfies a specific `BOOLEAN` expression.
+4. `CHECK`:  Ensures that data in a field satiisfies a specific `BOOLEAN` expression.
 
 ## Data Types
 
-See here for a full list of [PostgeSQL data types](https://www.postgresql.org/docs/13/datatype.html).  The most common ones can be found below.
+See [here](https://www.postgresql.org/docs/13/datatype.html) for a full list of PostgeSQL data types].  The most common ones can be found below:
 
 | Type | Description | Examples |
 |-|-|-|
@@ -208,7 +208,7 @@ CREATE DATABASE database_name;
 
 ```sql
 -- Parent table
-CREATE TABLE DIRECTORS( director_id serial PRIMARY KEY,
+CREATE TABLE DIRECTORS( director_id SERIAL PRIMARY KEY,
                         first_name VARCHAR ( 30 ),
                         last_name VARCHAR ( 30 ) NOT NULL,
                         date_of_birth DATE,
@@ -233,7 +233,7 @@ CREATE TABLE MOVIES_ACTORS( movie_id INT REFERENCES MOVIES(movie_id),
 
 ## Modifying Columns
 
-To add a column we use the `ALTER` statement to add a column.  As always we have to define the field's data type and contatraints at the time of creation.
+To add a column we use the `ALTER` statement to add a column.  As always, we have to define the field's data type and contatraints at the time of creation.
 
 ```sql
 ALTER TABLE directors
@@ -264,7 +264,7 @@ INSERT INTO TABLENAME(colname1, colname2, ...)
 VALUES ( value1, value2, ... );
 ```
 
-If you are adding a value to every column in the table you can use shoerthand notation by omitting the column names in the query above.  However, keep in mind that while we don't insert values into  `SERIAL` columns, they are still a column in the table so we do have to specify that we are only adding values to all the other columns only and cannot use the shorthand notation.
+If you are adding a value to every column in the table you can use shorthand notation by omitting the column names in the query above.  However, keep in mind that while we don't insert values into  `SERIAL` columns, they are still a column in the table so we do have to specify that we are only adding values to all the other columns only and cannot use the shorthand notation.
 
 ```sql
 -- the first col in this table is the id which is a serial
@@ -389,7 +389,7 @@ WHERE nationality IN ( 'British', 'German', 'French' )
 
 In some cases it may be inconvenient to deal with null values in your queries.  For example, `INT` + `NULL` = `NULL` which could cause some problems. Additionally, you may wish to indicate empty values in your results with a string on specific number instead of just null.
 
-The `COALESCE` function accepts an unlimited number of arguments. It returns the first argument that is not null. If all arguments are null, the `COALESCE` function will return null.
+The `COALESCE` function accepts an unlimited number of arguments. It returns the first argument that is not null. If all arguments are null, the `COALESCE` function will return `NULL`.
 
 Notice how this function allows us to refine the query below:
 
@@ -479,12 +479,6 @@ SELECT col1,
        col2
 FROM table_name
 FETCH FIRST X ROW ONLY;
-
-SELECT col1,
-       col2
-FROM table_name
-OFFSET Y
-FETCH NEXT X ROW ONLY;
 ```
 
 So an equivalent alternative to the queries above would be,
@@ -494,7 +488,7 @@ So an equivalent alternative to the queries above would be,
 SELECT *
 FROM movie_revenues
 ORDER BY domestic_takings
-FETCH FIRST 3 ROW only;
+FETCH FIRST 3 ROW ONLY;
 
 -- Returns actors with id 6-10 only
 SELECT *
@@ -552,7 +546,7 @@ SELECT 'string1' || 'string2' AS new_string;
 SELECT 'hello' || ' ' || 'world!' AS hello_world;
 ```
 
-to produce the string `hello world!`.  This isn't particularly useful, but the follwing sections will build on this idea of concatenation.
+to produce the string `hello world!`.  This isn't particularly useful, but the following sections will build on this idea of concatenation.
 
 ### Field Concatenation
 
