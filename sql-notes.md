@@ -6,19 +6,18 @@
     - [Entity-Relationship Diagram](#entity-relationship-diagram)
     - [Schema Diagram](#schema-diagram)
     - [Keys](#keys)
-- [SQL Theory](#sql-theory)
-  - [Data Definition Language (DDL)](#data-definition-language-ddl)
-  - [Data Manipulation Language (DML)](#data-manipulation-language-dml)
-  - [Data Control Language (DCL)](#data-control-language-dcl)
-  - [Transaction Control Language (TCL)](#transaction-control-language-tcl)
-- [DDL](#ddl)
+- [Database Relationships](#database-relationships)
+  - [One-to-One](#one-to-one)
+  - [One-to-Many](#one-to-many)
+- [Data Definition Language (DDL)](#data-definition-language-ddl)
   - [Creating Tables](#creating-tables)
   - [Modifying Columns](#modifying-columns)
-- [DML](#dml)
+- [Data Manipulation Language (DML)](#data-manipulation-language-dml)
   - [Inserting Data](#inserting-data)
   - [Updating Data](#updating-data)
   - [Deleting Data](#deleting-data)
-- [Transaction Control](#transaction-control)
+- [Data Control Language (DCL)](#data-control-language-dcl)
+- [Transaction Control Language (TCL)](#transaction-control-language-tcl)
 - [Queries](#queries)
   - [Handling `NULL` Values](#handling-null-values)
   - [Ordering Results](#ordering-results)
@@ -61,11 +60,11 @@ Contain **fields** (columns) and **records** (rows) of data.
 1. `UNIQUE`: Ensures that a field can only contain unique values.  Throws an error if a field contains duplicate values.
 2. `NOT NULL`: Ensures that  a field cannot constain `NULL` values.
 3. `SET DEFAULT`: Assigns a particular default value to every record in a field.  A value different from the default can be stored in the field only if it is specifically indicated.
-4. `CHECK`:  Ensures that data in a field satiisfies a specific `BOOLEAN` expression.
+4. `CHECK`:  Ensures that data in a field satisfies a specific `BOOLEAN` expression.
 
 ## Data Types
 
-See [here](https://www.postgresql.org/docs/13/datatype.html) for a full list of PostgeSQL data types].  The most common ones can be found below:
+See [here](https://www.postgresql.org/docs/13/datatype.html) for a full list of PostgeSQL data types.  The most common ones can be found below:
 
 | Type | Description | Examples |
 |-|-|-|
@@ -112,13 +111,40 @@ Database designers will plot the entire database system using two common methods
 
 ---
 
-# SQL Theory
+# Database Relationships
 
-SQL's syntax comprises several types of statements that allow you to perform various commands and operations.
+Database relationships are associations between tables that are created using join statements to retrieve data.
 
-## Data Definition Language (DDL)
+## One-to-One
 
-Statements that allow us to define or modify data structures and objects (e.g. the `CREATE` statement).
+Each primary key value contains only one record that relates to none or only one record in the related table's foreign key field.  Both tables can have only one record on each side of the relationship.
+
+
+![One-to-One Relationship](images/one-to-one.svg)
+
+*Managers information is kept in a separate table from the Departments table. Each manager oversees zero or only one department.  In turn, each department can have at most one manager. Hence there is a maximum of one record on each side of the relationship.*
+
+## One-to-Many
+
+The primary key table contains only one record that relates to none, one, or many records in the related table.
+
+![One-to-Many Relationship](images/one-to-many.svg)
+
+*Each department can have zero, one, or many employees.  In turn, employees can only work in one department.*
+
+---
+
+# Data Definition Language (DDL)
+
+To connect to your local database using from the command line, use the command `psql -U postgres -h localhost database_name`.  To connect to a specific database while already in psql, simply use the meta command `\c database_name`.
+
+To create a new database use the following command:
+
+```sql
+CREATE DATABASE database_name;
+```
+
+DDL is composed of statements that allow us to define or modify data structures and objects (e.g. the `CREATE` statement).
 
 ```sql
 -- create a table with a single column
@@ -136,72 +162,6 @@ DROP TABLE sales;
 
 -- alternatively, just empty the table
 TRUNCATE TABLE sales;
-```
-
-## Data Manipulation Language (DML)
-
-Statements that allow us to manipulate the data in a database (e.g. the `SELECT` statement is used to retrieve data from database objects).
-
-```sql
--- retrieve entire table
-SELECT *
-FROM sales;
-
--- insert data into table
--- equivalent to INSERT INTO sales (purchase_number, date_of_purchase) VALUES (001, '2021-10-11');
-INSERT INTO sales
-VALUES ( 001, "2021-10-11" );
-UPDATE sales
-SET date_of_purchase_ = "2020-12-12"
-WHERE purchase = 1;
-```
-
-While the `TRUNCATE` statement removes all the records contained in the table, `DELETE` allows us to specify precisely what you would like removed.
-
-```sql
-DELETE FROM sales
-WHERE purchase_number = 1;
-```
-
-## Data Control Language (DCL)
-
-Statements that allow us to manage the rights users have in a database.  You can `GRANT` OR `REVOKE` priviledges to users.  Both of these keywords have identical syntax.
-
-```sql
--- GRANT syntax
-GRANT permission_type ON database_name.table_name 
-TO "username" @ "localhost"
-
--- the user Frank can only SELECT
--- and only from the customers table in the database
-CREATE USER "frank" @ "localhost" identified BY "password";
-
-GRANT SELECT ON sales.customers 
-TO "frank" @ "localhost";
-```
-
-## Transaction Control Language (TCL)
-
-The `COMMIT` statement will save the changes you've made, allowing other users to access the modified version.  It only works with changes related to the DML keywords `INSERT`, `DELETE`, and `UPDATE`.
-
-```sql
-UPDATE customers
-SET last_name = "Johnson"
-WHERE customer_id = 4 COMMIT;
-```
-
-Comitted statements cannot be udone.  However, the `ROLLBACK` clause reverts all changes since the last commit or rollback.
-
----
-
-# DDL
-
-To connect to your local database using from the command line, use the command `psql -U postgres -h localhost database_name`.  To connect to a specific database while already in psql, simply use the meta command `\c database_name`.
-
-To create a new database use the following command:
-
-```sql
-CREATE DATABASE database_name;
 ```
 
 ## Creating Tables
@@ -245,15 +205,38 @@ To modify a field's data type, you use the `ALTER` keyword both on the table and
 
 ```sql
 ALTER TABLE directors
-ALTER COLUMN nationality type CHAR ( 3 ),
-ALTER COLUMN last_name type VARCHAR ( 50 );
+ALTER COLUMN nationality TYPE CHAR ( 3 ),
+ALTER COLUMN last_name TYPE VARCHAR ( 50 );
 ```
 
 Adding constraints on a field after its creation is a little bit more tricky and should be avoided through appropiate design.  For more information on how to do it [see here](https://www.cockroachlabs.com/docs/stable/add-constraint.html).
 
 ---
 
-# DML
+# Data Manipulation Language (DML)
+
+Statements that allow us to manipulate the data in a database (e.g. the `SELECT` statement is used to retrieve data from database objects).  We will ommit DML related to queries since this topic has its own section.
+
+```sql
+-- retrieve entire table
+SELECT *
+FROM sales;
+
+-- insert data into table
+-- equivalent to INSERT INTO sales (purchase_number, date_of_purchase) VALUES (001, '2021-10-11');
+INSERT INTO sales
+VALUES ( 001, "2021-10-11" );
+UPDATE sales
+SET date_of_purchase_ = "2020-12-12"
+WHERE purchase = 1;
+```
+
+While the `TRUNCATE` statement removes all the records contained in the table, `DELETE` allows us to specify precisely what you would like removed.
+
+```sql
+DELETE FROM sales
+WHERE purchase_number = 1;
+```
 
 ## Inserting Data
 
@@ -316,10 +299,36 @@ WHERE city = 'Oakville';
 - `TRUNCATE`: Truncating a table will wipe out all the records in the table but the structure (data types, constraints, etc.) will remain intact.  Serial values will reset to their default starting value.
 - `DELETE`: Removes records row by row according to the `WHERE` condition.  If this condition is omitted, it will have the same effect as truncating (only much less efficient since it's done row-by-row). **Serial values are not reset with `DELETE`**.
 
+---
+
+# Data Control Language (DCL)
+
+Statements that allow us to manage the rights users have in a database.  You can `GRANT` or `REVOKE` priviledges to users.  Both of these keywords have identical syntax.
+
+```sql
+-- GRANT syntax
+GRANT permission_type ON database_name.table_name 
+TO "username" @ "localhost"
+
+-- the user Frank can only SELECT
+-- and only from the customers table in the database
+CREATE USER "frank" @ "localhost" identified BY "password";
+
+GRANT SELECT ON sales.customers 
+TO "frank" @ "localhost";
+```
 
 ---
 
-# Transaction Control
+# Transaction Control Language (TCL)
+
+The `COMMIT` statement will save the changes you've made, allowing other users to access the modified version.  It only works with changes related to the DML keywords `INSERT`, `DELETE`, and `UPDATE`.
+
+```sql
+UPDATE customers
+SET last_name = "Johnson"
+WHERE customer_id = 4 COMMIT;
+```
 
 The `COMMIT` statement is used to save the state of the data in the database at the moment of its execution.  
 
@@ -559,7 +568,7 @@ FROM table_name;
 
 This does not change the strucutre of the table.  It just the data of various columns as a single column.
 
-For instance, we commonly want to concatenate first name and last name fields into a single filed.  You can do this by means of the following query.
+For instance, we commonly want to concatenate first name and last name fields into a single field.  You can do this by means of the following query:
 
 ```sql
 SELECT CONCAT(first_name, last_name) AS full_name
@@ -745,9 +754,9 @@ It is important that the syntax be in the right order.  Here is an example of a 
 SELECT colname1,
        AGG(colname2)
 FROM table_name
-WHERE SOME condition
+WHERE condition1
 GROUP BY colname1
-HAVING AGG(colname2) another condition
+HAVING AGG(colname2) condition2
 ```
 
 We may wish to look at the average rating of adult movies (15+) per language.  Which languages have an average age certificate strictly higher than 15?  The following query gives us what we need:
