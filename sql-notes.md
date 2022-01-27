@@ -414,7 +414,6 @@ FROM movie_revenues;
 It is important to note that `COALESCE` does not impact the structure of the table, it simply helps to improve query results.  See another example below:
 
 ```sql
-The NULL  values in the table will not change, they 
 SELECT COALESCE(first_name, 'First name not provided') AS first_name,
        COALESCE(last_name, 'Last name not provided') AS last_name
 FROM actors;
@@ -449,6 +448,7 @@ ORDER BY first_name DESC;
 
 > `NULL` is considered the **highest** value.  So be careful when ordering records in descending order since null values will show up at the top.
 > In these cases it is useful to include a `IS NOT NULL` statement in the query.
+> 
 
 ## Limiting Results
 
