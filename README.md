@@ -9,6 +9,7 @@
 - [Database Relationships](#database-relationships)
   - [One-to-One](#one-to-one)
   - [One-to-Many](#one-to-many)
+  - [Many-to-Many](#many-to-many)
 - [Data Definition Language (DDL)](#data-definition-language-ddl)
   - [Creating Tables](#creating-tables)
   - [Modifying Columns](#modifying-columns)
@@ -29,6 +30,10 @@
 - [Aggregate Functions](#aggregate-functions)
   - [Grouping Results](#grouping-results)
   - [Filtering Groups](#filtering-groups)
+- [Joins](#joins)
+  - [Inner Joins](#inner-joins)
+  - [Left & Right Joins](#left--right-joins)
+  - [Full Joins](#full-joins)
 
 ---
 
@@ -113,16 +118,18 @@ Database designers will plot the entire database system using two common methods
 
 # Database Relationships
 
-Database relationships are associations between tables that are created using join statements to retrieve data.
+Database relationships are associations between tables that are created using join statements to retrieve data.  In the following schema diagrams, we will use the following notation taken from [here](https://datanomix.wordpress.com/2017/12/07/relational-model-erd-crows-foot/).
+
+![ERD Notation](images/erd-notation.png)
 
 ## One-to-One
 
-Each primary key value contains only one record that relates to none or only one record in the related table's foreign key field.  Both tables can have only one record on each side of the relationship.
+Each PK value contains exactly one record that relates to zero or one record in the related table's FK field.  Both tables can have at most one record on each side of the relationship.
 
 
 ![One-to-One Relationship](images/one-to-one.svg)
 
-*Managers information is kept in a separate table from the Departments table. Each manager oversees zero or only one department.  In turn, each department can have at most one manager. Hence there is a maximum of one record on each side of the relationship.*
+*Managers information is kept in a separate table from the Departments table. Each manager oversees exactly one department (yes, some departments may have no manager).  In turn, each department can have at most one manager. Hence there is a maximum of one record on each side of the relationship.*
 
 ## One-to-Many
 
@@ -130,7 +137,15 @@ The primary key table contains only one record that relates to none, one, or man
 
 ![One-to-Many Relationship](images/one-to-many.svg)
 
-*Each department can have zero, one, or many employees.  In turn, employees can only work in one department.*
+*Each department can have zero, one, or many employees.  In turn, employees can only work in exactly one department.*
+
+## Many-to-Many
+
+Multiple records in one table are associated with multiple records in another table.  These relationships are usuallly reflected in a **junction table** which essentially has the **unique combinations** of all records as PK.
+
+![Many-to-Many Relationship](images/many-to-many.svg)
+
+*A book may have multiple authors and an author may write multiple books.  So what is unique is the book-author combinations, which are reflected in the junction table's PK.*
 
 ---
 
@@ -780,3 +795,106 @@ movie_lang |     avg_rating      | num_adult_movies
  Japanese   | 18.0000000000000000 |                2
  Portuguese | 16.5000000000000000 |                2
  English    | 15.7500000000000000 |               16
+
+ ---
+
+ # Joins
+
+Joint queries allow us to retireve data from multiple tables.  We can join two tables together when there are related columns of data between the two tables - usually PK's in one table and FK's in another, but not necessarily.  We just need to join tables through a related field.
+
+The basic strucutre of a join is as follows.  Notice that we can use **table aliases** to make the query more concise:
+
+```sql
+SELECT      a.colname1, b.colname2,...
+FROM        left_table AS a
+____ JOIN   right_table AS b
+ON          a.related_col = b.related_col;
+```
+
+## Inner Joins
+
+An inner join produces the set of records that match Table A and Table B.  An inner join has **no `NULL` values**.
+
+```sql
+SELECT  dir.director_id
+       ,dir.first_name
+       ,dir.last_name
+       ,dir.nationality
+       ,mov.movie_name
+FROM directors AS dir
+INNER JOIN movies AS mov
+ON dir.director_id = mov.director_id
+ORDER BY dir.first_name 
+FETCH FIRST 10 ROW ONLY;
+```
+
+ director_id | first_name |        last_name         | nationality  |                movie_name
+-------------|------------|--------------------------|--------------|-------------------------------
+15 | Ang        | Lee                      | Chinese      | Crouching Tiger Hidden Dragon
+15 | Ang        | Lee                      | Chinese      | Life of Pi
+16 | Bruce      | Lee                      | Chinese      | Way of the Dragon
+23 | Chan-wook  | Park                     | South Korean | Oldboy
+20 | Fernando   | Meirelles                | Brazilian    | City of God
+11 | Florian    | Henckel von Donnersmarck | German       | The Lives of Others
+9  | Francis    | Ford Coppola             | American     | Apocalypse Now
+17 | George     | Lucas                    | American     | Star Wars: Return of the Jedi
+
+
+> Inner joins do not need to have equality to join the fields, we can use `<`,`>`,`<>`.
+
+## Left & Right Joins
+
+A left join produces all the records from the left table with matching records in the right table.  If no record is available in the right table, then the **right side will contain `NULL` values**.
+
+```sql
+SELECT
+    dir.director_id,
+    dir.first_name,
+    dir.last_name,
+    dir.nationality,
+    mov.movie_name
+FROM
+    directors AS dir
+    LEFT JOIN movies AS mov ON dir.director_id = mov.director_id
+ORDER BY
+    dir.first_name
+FETCH FIRST
+    10 ROW ONLY;
+```
+
+ director_id | first_name |        last_name         | nationality  |                movie_name
+-------------|------------|--------------------------|--------------|-------------------------------
+15 | Ang        | Lee                      | Chinese      | Crouching Tiger Hidden Dragon
+15 | Ang        | Lee                      | Chinese      | Life of Pi
+16 | Bruce      | Lee                      | Chinese      | Way of the Dragon
+23 | Chan-wook  | Park                     | South Korean | Oldboy
+38 | Christopher  | Nolan                   | British | 
+20 | Fernando   | Meirelles                | Brazilian    | City of God
+11 | Florian    | Henckel von Donnersmarck | German       | The Lives of Others
+9  | Francis    | Ford Coppola             | American     | Apocalypse Now
+
+Notice that Chistopher Nolan now appears! This is because his director id has a record in the left table, so despite it having no matching record in the right table, the join includes it.
+
+> We can always clean up our query so that instead of a `NULL` in the right side, we get some sort of message.
+> ```sql
+> SELECT
+>    dir.director_id,
+>    dir.first_name,
+>    dir.last_name,
+>    dir.nationality,
+>    COALESCE(mov.movie_name, 'N/A')
+>FROM
+>    directors AS dir
+>    LEFT JOIN movies AS mov ON dir.director_id = mov.director_id
+>ORDER BY
+>    dir.first_name
+>FETCH FIRST
+>    10 ROW ONLY;
+> ```
+
+A right join produces all the records from the right table with matching records in the left table.  If no record is available in the left table, then the **left side will contain `NULL` values**.
+
+## Full Joins
+
+Full outer join produces the set of all records in both tables, matching records
+from both sides where available. If there is no match, **the missing side will contain `NULL`**.
