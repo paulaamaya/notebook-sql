@@ -27,7 +27,7 @@
   - [Concatenation](#concatenation)
     - [String Concatenation](#string-concatenation)
     - [Field Concatenation](#field-concatenation)
-  - [`UNION`](#union)
+  - [`UNION`, `INTERSECT`,  and `EXCEPT`](#union-intersect--and-except)
 - [Aggregate Functions](#aggregate-functions)
   - [Grouping Results](#grouping-results)
   - [Filtering Groups](#filtering-groups)
@@ -603,7 +603,7 @@ WHERE first_name LIKE 'A%'
 ORDER BY last_name;
 ```
 
-## `UNION`
+## `UNION`, `INTERSECT`,  and `EXCEPT`
 
 This operator combines the result-set of two or more `SELECT` queries.
 
@@ -618,13 +618,40 @@ SELECT col1, col2 FROM table2
 - The columns in every SELECT statement must also be in the same order.
 
 ```sql
-SELECT first_name, last_name FROM DIRECTORS
+SELECT first_name, last_name
+FROM ACTORS
+WHERE date_of_birth BETWEEN '1960-01-01' AND '1969-12-12'
 UNION
-SELECT first_name, last_name FROM ACTORS
+SELECT first_name, last_name
+FROM DIRECTORS
+WHERE date_of_birth BETWEEN '1960-01-01' AND '1969-12-12'
+ORDER BY last_name;
+```
+
+> **Note:** By default, the `UNION` statement removes duplicate values.  If you want to allow for duplicates, you can use the `UNION ALL` statement which works exactly in the same way and does not remove duplicates.
+
+
+The `INTERSECT` keyword works in the exact same way as `UNION`, but it only returns the entries that are common to all queries.
+
+```sql
+-- Actors who are both actors and directors
+SELECT first_name, last_name
+FROM ACTORS
+INTERSECT
+SELECT first_name, last_name
+FROM DIRECTORS
 ORDER BY first_name;
 ```
 
-By default, the `UNION` statement removes duplicate values.  If you want to allow for duplicates, you can use the `UNION ALL` statement which works exactly in the same way and does not remove duplicates.
+The `EXCEPT` keyword works returns the compliment of Table B.  For instance, the query below returns all the actors who are NOT directors - so the compliment of the directors table.
+
+```sql
+SELECT first_name, last_name
+FROM ACTORS
+EXCEPT
+SELECT first_name, last_name
+FROM DIRECTORS;
+```
 
 ---
 
