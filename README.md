@@ -27,13 +27,15 @@
   - [Concatenation](#concatenation)
     - [String Concatenation](#string-concatenation)
     - [Field Concatenation](#field-concatenation)
+  - [`UNION`](#union)
 - [Aggregate Functions](#aggregate-functions)
   - [Grouping Results](#grouping-results)
   - [Filtering Groups](#filtering-groups)
 - [Joins](#joins)
   - [Inner Joins](#inner-joins)
-  - [Left & Right Joins](#left--right-joins)
+  - [Left/Right Joins](#leftright-joins)
   - [Full Joins](#full-joins)
+  - [Multiple Joins](#multiple-joins)
 
 ---
 
@@ -601,6 +603,29 @@ WHERE first_name LIKE 'A%'
 ORDER BY last_name;
 ```
 
+## `UNION`
+
+This operator combines the result-set of two or more `SELECT` queries.
+
+```sql
+SELECT col1, col2 FROM table1
+UNION
+SELECT col1, col2 FROM table2
+```
+
+- Every `SELECT` statement must have the same number of columns.
+- The corresponding columns must have similar data types.
+- The columns in every SELECT statement must also be in the same order.
+
+```sql
+SELECT first_name, last_name FROM DIRECTORS
+UNION
+SELECT first_name, last_name FROM ACTORS
+ORDER BY first_name;
+```
+
+By default, the `UNION` statement removes duplicate values.  If you want to allow for duplicates, you can use the `UNION ALL` statement which works exactly in the same way and does not remove duplicates.
+
 ---
 
 # Aggregate Functions
@@ -842,7 +867,7 @@ FETCH FIRST 10 ROW ONLY;
 
 > Inner joins do not need to have equality to join the fields, we can use `<`,`>`,`<>`.
 
-## Left & Right Joins
+## Left/Right Joins
 
 A left join produces all the records from the left table with matching records in the right table.  If no record is available in the right table, then the **right side will contain `NULL` values**.
 
@@ -898,3 +923,39 @@ A right join produces all the records from the right table with matching records
 
 Full outer join produces the set of all records in both tables, matching records
 from both sides where available. If there is no match, **the missing side will contain `NULL`**.
+
+## Multiple Joins
+
+To join more than 2 tables, we just need to add an additional `JOIN` staement in the query.  You can think of it as chaining the joins - Table A is chained to Table B which is chained to Table C, and so on.
+
+```sql
+SELECT
+    dir.first_name,
+    dir.last_name,
+    mov.movie_name,
+    rev.domestic_takings,
+    rev.international_takings
+FROM
+    DIRECTORS as dir
+    INNER JOIN MOVIES AS mov ON dir.director_id = mov.director_id
+    INNER JOIN MOVIE_REVENUES AS rev ON mov.movie_id = rev.movie_id;
+```
+
+These triple joins are commonly used for when you cannot join two tables directly, but must do so through a junction table.  Essentially, you use the junction table as the "missing link" between two seemingly unrelated tables.
+
+Notice that in the exaple below, the values in the junction table are only used to link the two tables and are not actually displayed in the query results:
+
+```sql
+
+SELECT
+    ac.first_name,
+    ac.last_name,
+    mov.movie_name
+FROM
+    ACTORS AS ac
+    INNER JOIN MOVIES_ACTORS AS ma ON ac.actor_id = ma.actor_id
+    INNER JOIN MOVIES AS mov ON ma.movie_id = mov.movie_id
+WHERE
+    mov.movie_lang = 'English';
+```
+

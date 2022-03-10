@@ -78,3 +78,32 @@ WHERE
     dir.nationality = 'British'
 ORDER BY
     dir.first_name;
+
+--  MULTIPLE JOINS
+SELECT
+    dir.first_name,
+    dir.last_name,
+    mov.movie_name,
+    rev.domestic_takings,
+    rev.international_takings
+FROM
+    DIRECTORS as dir
+    INNER JOIN MOVIES AS mov ON dir.director_id = mov.director_id
+    INNER JOIN MOVIE_REVENUES AS rev ON mov.movie_id = rev.movie_id;
+
+SELECT
+    ac.first_name,
+    ac.last_name,
+    mov.movie_name
+FROM
+    ACTORS AS ac
+    INNER JOIN MOVIES_ACTORS AS ma ON ac.actor_id = ma.actor_id
+    INNER JOIN MOVIES AS mov ON ma.movie_id = mov.movie_id
+WHERE
+    mov.movie_lang = 'English';
+
+-- OPERATORS
+SELECT first_name, last_name FROM DIRECTORS
+UNION
+SELECT first_name, last_name FROM ACTORS
+ORDER BY first_name;
