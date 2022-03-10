@@ -36,6 +36,9 @@
   - [Left/Right Joins](#leftright-joins)
   - [Full Joins](#full-joins)
   - [Multiple Joins](#multiple-joins)
+- [Subqueries](#subqueries)
+  - [Uncorrelated Subqueries](#uncorrelated-subqueries)
+  - [Correlated Subqueries](#correlated-subqueries)
 
 ---
 
@@ -985,4 +988,69 @@ FROM
 WHERE
     mov.movie_lang = 'English';
 ```
+
+# Subqueries
+
+Subqueriesare just nested queries, where you make a query within a query.  They are implemented as follows:
+
+- The inner query executes first.
+- The results of the inner query are then passed to the outer query.
+- The inner query can be used after `FROM` or `WHERE` statements.
+
+## Uncorrelated Subqueries
+
+Uncorrelated subqueries are those where **the inner query could be exceuted independently from the outer query**.
+
+```sql
+SELECT movie_name, movie_length
+FROM movies
+WHERE movie_length > (
+        -- inner query
+        SELECT AVG(movie_length)
+        FROM movies
+    );
+
+-- This is a valid query on its own
+SELECT AVG(movie_length)
+FROM movies;
+```
+
+The previous inner query only returned a single value to the outer query.  However, it is possible to pass multiple values from the inner query to the outer query.  In terms of performance, these cases are usually better hnalded by a join:
+
+```sql
+-- 74 ms
+SELECT movie_name
+FROM movies
+WHERE movie_id IN (
+        SELECT movie_id
+        FROM movie_revenues
+        WHERE international_takings > domestic_takings
+);
+
+-- 42 ms
+
+SELECT mov.movie_name
+FROM movies AS mov
+    JOIN movie_revenues AS rev ON rev.movie_id = mov.movie_id
+WHERE rev.international_takings > rev.domestic_takings;
+```
+
+## Correlated Subqueries
+
+Correlated subqueries are those where the inner query references a table from the outer query, so **the inner query cannot be executed independently from the outer query**.
+
+```sql
+
+SELECT  m1.movie_name
+       ,m1.movie_length
+       ,m1.movie_lang
+FROM movies AS m1
+WHERE m1.movie_length = (
+        SELECT  MAX(movie_length)
+        FROM movies m2
+        WHERE m1.movie_lang = m2.movie_lang 
+        );
+```
+
+
 
